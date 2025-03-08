@@ -1,0 +1,28 @@
+#Generar archivos de la gramatica 
+antlr4 MiGramatica.g4
+
+# Generar el Lexer y Parser en Python
+antlr4 -Dlanguage=Python3 MiGramatica.g4
+
+Después de generar los archivos, hay que compilarlos con Java:
+javac -cp ".:$ANTLR_JAR" MiGramatica*.java
+
+echo "select * from personas where id>=1;" | java -cp ".:$ANTLR_JAR" org.antlr.v4.gui.TestRig MiGramatica query -tokens
+
+echo "select * from personas where id>=1;" | java -cp ".:$ANTLR_JAR" org.antlr.v4.gui.TestRig MiGramatica query -tree
+
+La regla esta definida para ingresar script con sintaxis en mayusculas, no es semsible para minusculas 
+si se quiere ajustar hay que realizar los siguientes cambios:
+
+SELECT : [sS][eE][lL][eE][cC][tT] ;
+FROM   : [fF][rR][oO][mM] ;
+WHERE  : [wW][hH][eE][rR][eE] ;
+STAR   : '*' ;
+COMMA  : ',' ;
+SEMI   : ';' ;
+GT     : '>' ;
+LT     : '<' ;
+EQ     : '=' ;
+GE     : '>=' ;
+LE     : '<=' ;
+NE     : '!=' ;

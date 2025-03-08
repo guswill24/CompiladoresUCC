@@ -1,0 +1,12 @@
+#Generar archivos de la gramatica 
+antlr4 MiGramatica.g4
+
+# Generar el Lexer y Parser en Python
+antlr4 -Dlanguage=Python3 MiGramatica.g4
+
+Después de generar los archivos, hay que compilarlos con Java:
+javac -cp ".:$ANTLR_JAR" MiGramatica*.java
+
+echo "if (x > 10) { y = y + 1; } else { y = y - 1; }" | java -cp ".:$ANTLR_JAR" org.antlr.v4.gui.TestRig MiGramatica programa -tokens
+
+echo "if (x > 10) { y = y + 1; } else { y = y - 1; }" | java -cp ".:$ANTLR_JAR" org.antlr.v4.gui.TestRig MiGramatica programa -tree

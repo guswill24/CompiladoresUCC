@@ -1,0 +1,73 @@
+#Generar archivos de la gramatica 
+antlr4 Expr.g4
+
+# Generar el Lexer y Parser en Python
+antlr4 -Dlanguage=Python3 Expr.g4
+
+Después de generar los archivos, hay que compilarlos con Java:
+javac -cp ".:$ANTLR_JAR" Expr*.java
+
+echo "3+5" | java -cp ".:$ANTLR_JAR" org.antlr.v4.gui.TestRig Expr root -tokens
+
+echo "5+10" | java -cp ".:$ANTLR_JAR" org.antlr.v4.gui.TestRig Expr root -tree
+
+Generar la plantilla de visitors.
+
+antlr4 -Dlanguage=Python3 -no-listener -visitor Expr.g4
+
+Ejecutamos test.py
+#----------contenido test.py ----------------
+from antlr4 import *
+from ExprLexer import ExprLexer
+from ExprParser import ExprParser
+input_stream = InputStream(input('? '))
+lexer = ExprLexer(input_stream)
+token_stream = CommonTokenStream(lexer)
+parser = ExprParser(token_stream)
+tree = parser.root()
+print(tree.toStringTree(recog=parser))
+#-----------------------------
+
+python3 test.py
+
+Creamos una copia de test.py y realizamos unos ajustes
+#---------test1.py-----------------------
+from antlr4 import *
+from ExprLexer import ExprLexer
+from ExprParser import ExprParser
+from TreeVisitor import TreeVisitor
+input_stream = InputStream(input('? '))
+lexer = ExprLexer(input_stream)
+token_stream = CommonTokenStream(lexer)
+parser = ExprParser(token_stream)
+tree = parser.root()
+visitor = TreeVisitor()
+visitor.visit(tree)
+#--------------------------------------------
+Ejecutamos test1.py
+
+#--------Clse TreeVisitor.py incorporada-------------
+if __name__ is not None and "." in __name__:
+    from .ExprParser import ExprParser
+    from .ExprVisitor import ExprVisitor
+else:
+    from ExprParser import ExprParser
+    from ExprVisitor import ExprVisitor
+
+class TreeVisitor(ExprVisitor):
+    def __init__(self):
+        self.nivell = 0
+
+    def visitExpr(self, ctx):
+        l = list(ctx.getChildren())
+        if len(l) == 1:
+            print(" " * self.nivell + 
+                  ExprParser.symbolicNames[l[0].getSymbol().type] +
+                  '(' + l[0].getText() + ')')
+        else:  # len(l) == 3
+            print(' ' * self.nivell + 'MAS(+)')
+            self.nivell += 1
+            self.visit(l[0])
+            self.visit(l[2])
+            self.nivell -= 1
+#-------------------------------------------------------------
